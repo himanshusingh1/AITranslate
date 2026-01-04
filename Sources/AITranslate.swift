@@ -264,7 +264,15 @@ struct AITranslate: AsyncParsableCommand {
         swiftContent += "      let format = NSLocalizedString(\"\"\"\n\(key)\n\"\"\", comment: \"\"\"\n\(key)\n\"\"\")\n"
         
         if !parameters.isEmpty {
-          let paramNames = parameters.map { $0.components(separatedBy: ":")[0] }
+          let paramNames = parameters.map { 
+            let parts = $0.components(separatedBy: ":")
+            let paramPart = parts[0].trimmingCharacters(in: .whitespaces)
+            // Remove the "_ " prefix if present
+            if paramPart.hasPrefix("_ ") {
+              return String(paramPart.dropFirst(2))
+            }
+            return paramPart
+          }
           swiftContent += "      return String(format: format, \(paramNames.joined(separator: ", ")))\n"
         } else {
           swiftContent += "      return format\n"
@@ -465,7 +473,7 @@ struct AITranslate: AsyncParsableCommand {
       for _ in 0..<count {
         let parameterName = "param\(parameterIndex)"
         let parameterType = getParameterType(for: specifier)
-        parameters.append("\(parameterName): \(parameterType)")
+        parameters.append("_ \(parameterName): \(parameterType)")
         parameterIndex += 1
       }
     }
